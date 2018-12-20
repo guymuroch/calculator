@@ -37,16 +37,18 @@ class App extends Component {
         calculator: change
       });
     }
-    if (
-      digit === "*" ||
-      digit === "+" ||
-      digit === "-" ||
-      digit === "/" ||
-      digit === "%"
-    ) {
+    if (digit === "*" || digit === "+" || digit === "-" || digit === "/") {
       change.operator = digit;
       change.value = change.temporaryValue;
       change.temporaryValue = "";
+      this.setState({
+        calculator: change
+      });
+    }
+    if (digit === "%") {
+      change.operator = "";
+      change.temporaryValue = parseFloat(change.temporaryValue) / 100;
+      change.value = "";
       this.setState({
         calculator: change
       });
@@ -61,7 +63,6 @@ class App extends Component {
     }
     if (digit === "+/-") {
       if (change.temporaryValue[0] === "-") {
-        console.log("works");
         change.temporaryValue = change.temporaryValue.replace("-", "");
       } else {
         change.temporaryValue = "-" + change.temporaryValue;
@@ -72,7 +73,6 @@ class App extends Component {
     }
   };
   render() {
-    console.log(this.state.calculator);
     return (
       <div className="App">
         <div className="calculator">
