@@ -41,33 +41,30 @@ class Calculator extends Component {
   };
   getResult = () => {
     let calculator = this.state.calculator;
-    if (calculator.temporaryValue === "") {
-      calculator.temporaryValue = calculator.value;
-    }
-    if (
-      (calculator.temporaryValue === "" && calculator.value === "") ||
-      calculator.value === "." ||
-      calculator.value === "-"
-    ) {
-      calculator.temporaryValue = "";
-    } else if (calculator.temporaryValue < 0 && calculator.operator === "-") {
-      calculator.temporaryValue = calculator.temporaryValue.replace("-", "");
-      calculator.operator = "+";
+    let number1 = parseInt(calculator.value);
+    let number2 = parseInt(calculator.temporaryValue);
+    if (Number.isInteger(number1) && Number.isInteger(number2)) {
       calculator.temporaryValue = `${eval(
         `${calculator.value}${calculator.operator}${calculator.temporaryValue}`
       )}`;
       calculator.temporaryValue = calculator.temporaryValue.substring(0, 7);
+      calculator.value = "";
+      calculator.operator = "";
+      this.setState({
+        calculator: calculator
+      });
     } else {
-      calculator.temporaryValue = `${eval(
-        `${calculator.value}${calculator.operator}${calculator.temporaryValue}`
-      )}`;
-      calculator.temporaryValue = calculator.temporaryValue.substring(0, 7);
+      calculator.value = "";
+      calculator.operator = "";
+      calculator.temporaryValue = "error";
+      this.setState({
+        calculator: calculator
+      });
+      setTimeout(() => {
+        calculator.temporaryValue = "";
+        this.setState({ calculator: calculator });
+      }, 1000);
     }
-    calculator.value = "";
-    calculator.operator = "";
-    this.setState({
-      calculator: calculator
-    });
   };
   changeOperator = digit => {
     let calculator = this.state.calculator;
@@ -88,7 +85,6 @@ class Calculator extends Component {
 
   eventHandler = e => {
     let digit = e;
-    console.log(digit);
     let change = this.state.calculator;
     if (digit === "AC") {
       this.resetVar();
@@ -102,14 +98,26 @@ class Calculator extends Component {
     ) {
       this.changeOperator(digit);
     } else if (digit === "%") {
-      change.operator = "";
-      change.temporaryValue = (parseFloat(change.temporaryValue) / 100).toFixed(
-        4
-      );
-      change.value = "";
-      this.setState({
-        calculator: change
-      });
+      let number = parseInt(change.temporaryValue);
+      if (Number.isInteger(number)) {
+        change.temporaryValue = (
+          parseFloat(change.temporaryValue) / 100
+        ).toFixed(4);
+        change.value = "";
+        this.setState({
+          calculator: change
+        });
+      } else {
+        change.operator = "";
+        change.temporaryValue = "error";
+        this.setState({
+          calculator: change
+        });
+        setTimeout(() => {
+          change.temporaryValue = "";
+          this.setState({ calculator: change });
+        }, 1000);
+      }
     } else if (digit === "+/-") {
       if (change.temporaryValue[0] === "-") {
         change.temporaryValue = change.temporaryValue.replace("-", "");
@@ -119,6 +127,11 @@ class Calculator extends Component {
       this.setState({
         calculator: change
       });
+    } else if (digit === ".") {
+      if (change.temporaryValue.indexOf(".") != -1) {
+      } else {
+        this.changeDigit(digit);
+      }
     } else {
       this.changeDigit(digit);
     }
