@@ -1,67 +1,109 @@
 import React, { Component } from "react";
 import "./App.css";
+import Digit from "./Digit";
 
 class App extends Component {
   constructor() {
     super();
     this.state = {
-      numbers: ["AC", "+/-", "%", "/"],
-      numbers1: ["7", "8", "9", "*"],
-      numbers2: ["4", "5", "6", "-"],
-      numbers3: ["1", "2", "3", "+"],
-      numbers4: ["0", ".", "="],
+      numbers: [
+        "AC",
+        "+/-",
+        "%",
+        "/",
+        "7",
+        "8",
+        "9",
+        "*",
+        "4",
+        "5",
+        "6",
+        "-",
+        "1",
+        "2",
+        "3",
+        "+",
+        "0",
+        ".",
+        "="
+      ],
       calculator: { value: "", temporaryValue: "", operator: "" }
     };
   }
-  changeScore = e => {
-    let digit = e.target.value;
+  resetVar = () => {
+    let restCalculator = this.state.calculator;
+    restCalculator.operator = "";
+    restCalculator.temporaryValue = "";
+    restCalculator.value = "";
+    this.setState({
+      calculator: restCalculator
+    });
+  };
+  getResult = () => {
+    let calculator = this.state.calculator;
+    if (calculator.temporaryValue === "") {
+      calculator.temporaryValue = calculator.value;
+    }
+    if (
+      (calculator.temporaryValue === "" && calculator.value === "") ||
+      calculator.value === "." ||
+      calculator.value === "-"
+    ) {
+      calculator.temporaryValue = "";
+    } else {
+      calculator.temporaryValue = `${eval(
+        `${calculator.value}${calculator.operator}${calculator.temporaryValue}`
+      )}`;
+      calculator.temporaryValue = calculator.temporaryValue.substring(0, 7);
+    }
+    calculator.value = "";
+    calculator.operator = "";
+    this.setState({
+      calculator: calculator
+    });
+  };
+  changeOperator = digit => {
+    let calculator = this.state.calculator;
+    calculator.operator = digit;
+    calculator.value = calculator.temporaryValue;
+    calculator.temporaryValue = "";
+    this.setState({
+      calculator: calculator
+    });
+  };
+  changeDigit = digit => {
+    let calculator = this.state.calculator;
+    calculator.temporaryValue += digit;
+    this.setState({
+      calculator: calculator
+    });
+  };
+
+  eventHandler = e => {
+    let digit = e;
+    console.log(digit);
     let change = this.state.calculator;
     if (digit === "AC") {
+      this.resetVar();
+    } else if (digit === "=") {
+      this.getResult();
+    } else if (
+      digit === "*" ||
+      digit === "+" ||
+      digit === "-" ||
+      digit === "/"
+    ) {
+      this.changeOperator(digit);
+    } else if (digit === "%") {
       change.operator = "";
-      change.temporaryValue = "";
+      change.temporaryValue = (parseFloat(change.temporaryValue) / 100).toFixed(
+        4
+      );
       change.value = "";
       this.setState({
         calculator: change
       });
-    }
-    if (digit === "=") {
-      if (change.temporaryValue === "") {
-        change.temporaryValue = change.value;
-      }
-      change.temporaryValue = `${eval(
-        `${change.value}${change.operator}${change.temporaryValue}`
-      )}`;
-      change.value = "";
-      change.operator = "";
-      this.setState({
-        calculator: change
-      });
-    }
-    if (digit === "*" || digit === "+" || digit === "-" || digit === "/") {
-      change.operator = digit;
-      change.value = change.temporaryValue;
-      change.temporaryValue = "";
-      this.setState({
-        calculator: change
-      });
-    }
-    if (digit === "%") {
-      change.operator = "";
-      change.temporaryValue = parseFloat(change.temporaryValue) / 100;
-      change.value = "";
-      this.setState({
-        calculator: change
-      });
-    }
-    let numbersArray = [".", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
-    let answer = numbersArray.indexOf(digit);
-    if (answer != -1) {
-      change.temporaryValue += digit;
-      this.setState({
-        calculator: change
-      });
-    }
-    if (digit === "+/-") {
+    } else if (digit === "+/-") {
       if (change.temporaryValue[0] === "-") {
         change.temporaryValue = change.temporaryValue.replace("-", "");
       } else {
@@ -70,167 +112,64 @@ class App extends Component {
       this.setState({
         calculator: change
       });
+    } else {
+      this.changeDigit(digit);
     }
   };
   render() {
     return (
       <div className="App">
+        <h1>works with keyboard</h1>
+        <h3>(press AC first)</h3>
         <div className="calculator">
           <div className="screen">
-            <h2>{this.state.calculator.temporaryValue}</h2>
+            <h2>
+              {this.state.calculator.temporaryValue.substring(0, 7) ||
+                this.state.calculator.operator ||
+                0}
+            </h2>
           </div>
           <div className="digits">
             {this.state.numbers.map((digit, index) => {
-              if (digit === "/") {
+              if (
+                digit === "/" ||
+                digit === "*" ||
+                digit === "-" ||
+                digit === "+" ||
+                digit === "="
+              ) {
                 return (
-                  <input
-                    onClick={e => {
-                      this.changeScore(e);
-                    }}
-                    type="button"
-                    value={digit}
-                    style={{ backgroundColor: "orange" }}
-                    className="digit"
+                  <Digit
+                    color={"orange"}
                     key={index}
+                    eventHandler={this.eventHandler}
+                    digit={digit}
+                  />
+                );
+              } else if (digit === "0") {
+                return (
+                  <Digit
+                    key={index}
+                    eventHandler={this.eventHandler}
+                    digit={digit}
+                    style={"47%"}
+                  />
+                );
+              } else if (digit === "AC" || digit === "+/-" || digit === "%") {
+                return (
+                  <Digit
+                    key={index}
+                    eventHandler={this.eventHandler}
+                    digit={digit}
+                    color={"rgb(190, 182, 182)"}
                   />
                 );
               } else {
                 return (
-                  <input
-                    onClick={e => {
-                      this.changeScore(e);
-                    }}
-                    type="button"
-                    value={digit}
-                    style={{ backgroundColor: "rgb(196, 182, 182)" }}
-                    className="digit"
+                  <Digit
                     key={index}
-                  />
-                );
-              }
-            })}
-            {this.state.numbers1.map((digit, index) => {
-              if (digit === "*") {
-                return (
-                  <input
-                    onClick={e => {
-                      this.changeScore(e);
-                    }}
-                    type="button"
-                    value={digit}
-                    style={{ backgroundColor: "orange" }}
-                    className="digit"
-                    key={index}
-                  />
-                );
-              } else {
-                return (
-                  <input
-                    onClick={e => {
-                      this.changeScore(e);
-                    }}
-                    type="button"
-                    value={digit}
-                    className="digit"
-                    key={index}
-                  />
-                );
-              }
-            })}
-            {this.state.numbers2.map((digit, index) => {
-              if (digit === "-") {
-                return (
-                  <input
-                    onClick={e => {
-                      this.changeScore(e);
-                    }}
-                    type="button"
-                    value={digit}
-                    style={{ backgroundColor: "orange" }}
-                    className="digit"
-                    key={index}
-                  />
-                );
-              } else {
-                return (
-                  <input
-                    onClick={e => {
-                      this.changeScore(e);
-                    }}
-                    type="button"
-                    value={digit}
-                    className="digit"
-                    key={index}
-                  />
-                );
-              }
-            })}
-            {this.state.numbers3.map((digit, index) => {
-              if (digit === "+") {
-                return (
-                  <input
-                    onClick={e => {
-                      this.changeScore(e);
-                    }}
-                    type="button"
-                    value={digit}
-                    style={{ backgroundColor: "orange" }}
-                    className="digit"
-                    key={index}
-                  />
-                );
-              } else {
-                return (
-                  <input
-                    onClick={e => {
-                      this.changeScore(e);
-                    }}
-                    type="button"
-                    value={digit}
-                    className="digit"
-                    key={index}
-                  />
-                );
-              }
-            })}
-            {this.state.numbers4.map((digit, index) => {
-              if (digit === "0") {
-                return (
-                  <input
-                    onClick={e => {
-                      this.changeScore(e);
-                    }}
-                    type="button"
-                    value={digit}
-                    style={{ width: "47%", borderRadius: "40px" }}
-                    className="digit"
-                    key={index}
-                  />
-                );
-              }
-              if (digit === "=") {
-                return (
-                  <input
-                    onClick={e => {
-                      this.changeScore(e);
-                    }}
-                    type="button"
-                    value={digit}
-                    style={{ backgroundColor: "orange" }}
-                    className="digit"
-                    key={index}
-                  />
-                );
-              } else {
-                return (
-                  <input
-                    onClick={e => {
-                      this.changeScore(e);
-                    }}
-                    type="button"
-                    value={digit}
-                    className="digit"
-                    key={index}
+                    eventHandler={this.eventHandler}
+                    digit={digit}
                   />
                 );
               }
